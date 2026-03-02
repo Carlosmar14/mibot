@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Sincronizado - Tiempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Pantalla de Login */
+        .login-screen {
+            padding: 60px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-screen h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .login-screen p {
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .telegram-login-widget {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            display: none;
+        }
+
+        /* Pantalla Principal */
+        .main-screen {
+            display: none;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-details {
+            text-align: left;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .user-id {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        /* Panel de Comandos */
+        .commands-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .commands-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .command-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .command-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+
+        .command-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.2);
+            background: #f0f3ff;
+        }
+
+        .command-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .command-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Panel de Chat */
+        .chat-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            height: 550px;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .bot-avatar {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+
+        .bot-info {
+            flex: 1;
+        }
+
+        .bot-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4caf50;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .message-content {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-meta {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 5px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user .message-meta {
+            justify-content: flex-end;
+        }
+
+        .message-origen {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .chat-input button {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-input button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        /* Panel de Estadísticas */
+        .stats-section {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 15px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de Login REAL -->
+        <div id="loginScreen" class="login-screen">
+            <h1>🤖 Bot Espejo - Tiempo Real</h1>
+            <p>Inicia sesión con Telegram para sincronizar<br>web y bot como un solo sistema</p>
+            
+            <div class="telegram-login-widget">
+                <script async src="https://telegram.org/js/telegram-widget.js?22"
+                        data-telegram-login="shopcmar_bot"  <!-- ← CAMBIA ESTO -->
+                        data-size="large"
+                        data-radius="20"
+                        data-onauth="onTelegramAuth(user)"
+                        data-request-access="write">
+                </script>
+            </div>
+            
+            <div id="loginStatus" class="status-message">
+                Verificando identidad con Telegram...
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+                Al iniciar sesión, todos tus mensajes se sincronizarán<br>
+                en tiempo real entre la web y Telegram
+            </p>
+        </div>
+
+        <!-- Pantalla Principal -->
+        <div id="mainScreen" class="main-screen">
+            <!-- Header con usuario -->
+            <div class="header">
+                <h1>🤖 Bot Espejo</h1>
+                <div class="user-info" id="userInfo">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Cargando...</div>
+                        <div class="user-id" id="userId"></div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="main-content">
+                <!-- Panel de Comandos -->
+                <div class="commands-section">
+                    <h2>📋 Comandos Disponibles</h2>
+                    <div class="command-list">
+                        <div class="command-item" onclick="enviarComando('/start')">
+                            <div class="command-name">/start</div>
+                            <div class="command-desc">Iniciar bot y ver bienvenida</div>
+                        </div>
+                        <div class="command-item" onclick="enviarComando('/ayuda')">
+                            <div class="command-name">/ayuda</div>
+                            <div class="command-desc">Ver todos los comandos</div>
+                        </div>
+                        <div class="command-item" onclick="enviarComando('/info')">
+                            <div class="command-name">/info</div>
+                            <div class="command-desc">Información del sistema</div>
+                        </div>
+                        <div class="command-item" onclick="enviarComando('/hora')">
+                            <div class="command-name">/hora</div>
+                            <div class="command-desc">Hora actual</div>
+                        </div>
+                        <div class="command-item" onclick="enviarComando('/perfil')">
+                            <div class="command-name">/perfil</div>
+                            <div class="command-desc">Tu perfil de Telegram</div>
+                        </div>
+                        <div class="command-item" onclick="enviarComando('/estado')">
+                            <div class="command-name">/estado</div>
+                            <div class="command-desc">Estado de sincronización</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Chat -->
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <div class="bot-avatar">🤖</div>
+                        <div class="bot-info">
+                            <div class="bot-name">Bot Sincronizado</div>
+                            <div class="status-indicator">
+                                <span class="status-dot"></span>
+                                <span id="statusText">Conectado (Tiempo real)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Los mensajes se insertan aquí -->
+                    </div>
+
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Escribe un mensaje o comando..." onkeypress="if(event.key==='Enter') enviarMensaje()">
+                        <button onclick="enviarMensaje()">➤</button>
+                    </div>
+                </div>
+
+                <!-- Estadísticas en Tiempo Real -->
+                <div class="stats-section">
+                    <div class="stat-item">
+                        <div class="stat-number" id="statMensajes">0</div>
+                        <div class="stat-label">Mensajes hoy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statComandos">0</div>
+                        <div class="stat-label">Comandos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statUsuarios">0</div>
+                        <div class="stat-label">Usuarios online</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statEstado">🟢</div>
+                        <div class="stat-label">Sincronización</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN - CAMBIA ESTO
+        // ============================================
+        const API_URL = "https://AQUI_VA_TU_URL_DE_RENDER.onrender.com";  // ← CAMBIA DESPUÉS DE CREAR EN RENDER
+        
+        // Variables globales
+        let currentUser = null;
+        let sessionId = null;
+        let ultimoIdRecibido = 0;
+        let mensajesContador = 0;
+        let comandosContador = 0;
+        let pollingInterval = null;
+        let reconnectAttempts = 0;
+
+        // ============================================
+        // LOGIN REAL CON TELEGRAM
+        // ============================================
+        window.onTelegramAuth = async function(user) {
+            console.log("✅ Datos recibidos de Telegram:", user);
+            
+            const statusDiv = document.getElementById("loginStatus");
+            statusDiv.style.display = "block";
+            statusDiv.textContent = "Verificando identidad con el servidor...";
+            statusDiv.style.background = "rgba(255,255,255,0.1)";
+            
+            try {
+                // Enviar al servidor para verificación real
+                const response = await fetch(`${API_URL}/auth/telegram`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(user)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Login exitoso
+                    currentUser = data.user;
+                    sessionId = data.session;
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem("bot_user", JSON.stringify(currentUser));
+                    localStorage.setItem("bot_session", sessionId);
+                    localStorage.setItem("bot_login", Date.now().toString());
+                    
+                    // Actualizar UI
+                    actualizarUIUsuario();
+                    
+                    // Cambiar a pantalla principal
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("mainScreen").style.display = "block";
+                    
+                    // Mensaje de bienvenida
+                    agregarMensaje({
+                        origen: "bot",
+                        texto: `🎉 ¡Bienvenido ${currentUser.first_name}! 
+
+Has iniciado sesión con tu cuenta real de Telegram.
+
+✅ **Sincronización activada**
+• Los mensajes que escribas aquí aparecerán en Telegram
+• Los mensajes que escribas en Telegram aparecerán aquí
+• Todo en tiempo real
+
+Usa /ayuda para ver todos los comandos.`,
+                        fecha: Date.now() / 1000
+                    });
+                    
+                    // Iniciar polling en tiempo real
+                    iniciarPolling();
+                    
+                    statusDiv.textContent = "✅ Login exitoso! Conectando...";
+                    statusDiv.style.background = "rgba(76, 175, 80, 0.3)";
+                    
+                    console.log("✅ Usuario autenticado:", currentUser);
+                } else {
+                    throw new Error(data.error || "Error en verificación");
+                }
+            } catch (error) {
+                console.error("❌ Error en login:", error);
+                statusDiv.textContent = "❌ Error de conexión. Intenta de nuevo.";
+                statusDiv.style.background = "rgba(244, 67, 54, 0.3)";
+            }
+        };
+
+        function actualizarUIUsuario() {
+            if (!currentUser) return;
+            
+            document.getElementById("userName").textContent = 
+                `${currentUser.first_name} ${currentUser.last_name || ""}`;
+            document.getElementById("userId").textContent = `ID: ${currentUser.id}`;
+            
+            if (currentUser.photo_url) {
+                document.getElementById("userAvatar").innerHTML = 
+                    `<img src="${currentUser.photo_url}" alt="Avatar">`;
+            }
+            
+            if (currentUser.username) {
+                document.getElementById("userId").textContent += ` | @${currentUser.username}`;
+            }
+        }
+
+        // ============================================
+        // POLLING EN TIEMPO REAL (CADA 1 SEGUNDO)
+        // ============================================
+        function iniciarPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            pollingInterval = setInterval(async () => {
+                if (!currentUser || !sessionId) return;
+                
+                try {
+                    const response = await fetch(
+                        `${API_URL}/api/recibir/${currentUser.id}?session=${sessionId}&ultimo_id=${ultimoIdRecibido}`,
+                        { headers: { "Accept": "application/json" } }
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Procesar mensajes nuevos
+                        if (data.mensajes && data.mensajes.length > 0) {
+                            data.mensajes.forEach(m => {
+                                agregarMensaje(m);
+                                
+                                if (m.origen === "web" && m.texto.startsWith("/")) {
+                                    comandosContador++;
+                                }
+                                if (m.origen !== "web") {
+                                    mensajesContador++;
+                                }
+                            });
+                            
+                            // Actualizar estadísticas
+                            document.getElementById("statMensajes").textContent = mensajesContador;
+                            document.getElementById("statComandos").textContent = comandosContador;
+                        }
+                        
+                        // Actualizar último ID
+                        if (data.ultimo_id > ultimoIdRecibido) {
+                            ultimoIdRecibido = data.ultimo_id;
+                        }
+                        
+                        // Actualizar contador de usuarios online
+                        if (data.conectados) {
+                            document.getElementById("statUsuarios").textContent = data.conectados;
+                        }
+                        
+                        // Resetear intentos de reconexión
+                        reconnectAttempts = 0;
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error("Error en polling:", error);
+                    
+                    reconnectAttempts++;
+                    document.getElementById("statusText").textContent = 
+                        reconnectAttempts > 3 ? "Reconectando..." : "Conectado";
+                    
+                    if (reconnectAttempts > 10) {
+                        document.getElementById("statusText").textContent = "Desconectado";
+                        document.querySelector(".status-dot").style.background = "#f44336";
+                    }
+                }
+            }, 1000); // Cada 1 segundo para tiempo real
+        }
+
+        // ============================================
+        // ENVIAR MENSAJE
+        // ============================================
+        async function enviarMensaje() {
+            const input = document.getElementById("messageInput");
+            const texto = input.value.trim();
+            
+            if (!texto || !currentUser || !sessionId) return;
+            
+            // Mostrar inmediatamente en UI
+            agregarMensaje({
+                origen: "web",
+                texto: texto,
+                fecha: Date.now() / 1000,
+                nombre: currentUser.first_name
+            });
+            
+            mensajesContador++;
+            if (texto.startsWith("/")) comandosContador++;
+            
+            document.getElementById("statMensajes").textContent = mensajesContador;
+            document.getElementById("statComandos").textContent = comandosContador;
+            
+            input.value = "";
+            
+            // Enviar al servidor
+            try {
+                const response = await fetch(`${API_URL}/api/enviar`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        texto: texto,
+                        session: sessionId
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error("Error enviando mensaje");
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+            }
+        }
+
+        function enviarComando(comando) {
+            document.getElementById("messageInput").value = comando;
+            enviarMensaje();
+        }
+
+        function agregarMensaje(mensaje) {
+            const chatMessages = document.getElementById("chatMessages");
+            const msgDiv = document.createElement("div");
+            
+            // Determinar tipo de mensaje
+            const esUsuario = mensaje.origen === "web";
+            msgDiv.className = `message ${esUsuario ? "user" : "bot"}`;
+            
+            // Formatear fecha
+            const fecha = new Date(mensaje.fecha * 1000);
+            const hora = fecha.toLocaleTimeString();
+            
+            // Determinar origen para mostrar
+            let origenTexto = mensaje.origen === "web" ? "Web" : 
+                             (mensaje.origen === "telegram" ? "Telegram" : "Bot");
+            
+            // Formatear texto (reemplazar saltos de línea)
+            const textoFormateado = mensaje.texto.replace(/\n/g, "<br>");
+            
+            msgDiv.innerHTML = `
+                <div class="message-content">
+                    ${textoFormateado}
+                    <div class="message-meta">
+                        <span class="message-origen">📱 ${origenTexto}</span>
+                        <span>${hora}</span>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ============================================
+        // LOGOUT
+        // ============================================
+        function logout() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            
+            if (currentUser) {
+                console.log(`👋 Usuario desconectado: ${currentUser.first_name}`);
+            }
+            
+            currentUser = null;
+            sessionId = null;
+            ultimoIdRecibido = 0;
+            mensajesContador = 0;
+            comandosContador = 0;
+            
+            localStorage.removeItem("bot_user");
+            localStorage.removeItem("bot_session");
+            localStorage.removeItem("bot_login");
+            
+            document.getElementById("mainScreen").style.display = "none";
+            document.getElementById("loginScreen").style.display = "flex";
+            document.getElementById("chatMessages").innerHTML = "";
+            
+            document.getElementById("loginStatus").style.display = "none";
+            document.getElementById("loginStatus").textContent = "";
+            
+            document.querySelector(".status-dot").style.background = "#4caf50";
+            document.getElementById("statusText").textContent = "Conectado";
+        }
+
+        // ============================================
+        // VERIFICAR SESIÓN EXISTENTE
+        // ============================================
+        window.onload = function() {
+            const savedUser = localStorage.getItem("bot_user");
+            const savedSession = localStorage.getItem("bot_session");
+            
+            if (savedUser && savedSession) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    sessionId = savedSession;
+                    
+                    // Verificar que la sesión no sea muy antigua (24 horas)
+                    const lastLogin = localStorage.getItem("bot_login");
+                    if (lastLogin && (Date.now() - parseInt(lastLogin)) > 86400000) {
+                        logout();
+                        return;
+                    }
+                    
+                    actualizarUIUsuario();
+                    
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("mainScreen").style.display = "block";
+                    
+                    iniciarPolling();
+                    
+                } catch (e) {
+                    console.error("Error cargando sesión:", e);
+                    logout();
+                }
+            }
+        };
+
+        // Limpiar al cerrar
+        window.onbeforeunload = function() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        };
+    </script>
+</body>
+</html>
