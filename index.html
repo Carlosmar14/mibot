@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Sincronizado - shopcmar_bot</title>
+    <title>Mi Chat Personal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI'; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 1200px; width: 100%; overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 800px; overflow: hidden; }
         
         /* Login */
         .login-screen { padding: 60px 40px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
@@ -15,44 +15,48 @@
         .login-screen p { margin-bottom: 40px; }
         .telegram-login-widget { display: flex; justify-content: center; margin: 30px 0; }
         
-        /* Main */
-        .main-screen { display: none; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .user-info { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 50px; }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        /* Chat Personal */
+        .chat-screen { display: none; height: 600px; flex-direction: column; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-logout { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 25px; border-radius: 25px; cursor: pointer; }
+        .btn-logout { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
         
-        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 40px; }
+        /* Mensajes */
+        .messages-area { flex: 1; overflow-y: auto; padding: 20px; background: #f5f7fb; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 10px 15px; border-radius: 15px; position: relative; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Comandos */
-        .commands-section { background: #f8f9fa; border-radius: 15px; padding: 25px; }
-        .command-item { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid #667eea; }
-        .command-item:hover { transform: translateX(5px); }
+        .message.mio { align-self: flex-end; background: #667eea; color: white; }
+        .message.suyo { align-self: flex-start; background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message.bot { align-self: center; background: #e2e8f0; color: #4a5568; font-style: italic; max-width: 90%; text-align: center; }
         
-        /* Chat */
-        .chat-section { background: #f8f9fa; border-radius: 15px; padding: 25px; display: flex; flex-direction: column; height: 500px; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: white; border-radius: 10px; margin-bottom: 15px; }
-        .message { margin-bottom: 15px; display: flex; flex-direction: column; }
-        .message.user { align-items: flex-end; }
-        .message.bot { align-items: flex-start; }
-        .message-content { max-width: 80%; padding: 10px 15px; border-radius: 15px; }
-        .message.user .message-content { background: #667eea; color: white; }
-        .message.bot .message-content { background: #f0f0f0; color: #333; }
-        .chat-input { display: flex; gap: 10px; }
-        .chat-input input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 25px; }
-        .chat-input button { width: 50px; height: 50px; background: #667eea; border: none; border-radius: 50%; color: white; cursor: pointer; }
+        .message-info { font-size: 0.7em; margin-top: 5px; opacity: 0.7; display: flex; gap: 10px; }
+        .message.mio .message-info { justify-content: flex-end; }
         
-        .stats-section { grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 30px; color: white; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center; }
-        .stat-number { font-size: 2.5em; font-weight: bold; }
+        /* Input */
+        .input-area { display: flex; padding: 20px; gap: 10px; background: white; border-top: 1px solid #e2e8f0; }
+        .input-area input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 25px; font-size: 1em; outline: none; transition: border-color 0.3s; }
+        .input-area input:focus { border-color: #667eea; }
+        .input-area button { width: 50px; height: 50px; background: #667eea; border: none; border-radius: 50%; color: white; font-size: 1.2em; cursor: pointer; transition: transform 0.2s; }
+        .input-area button:hover { transform: scale(1.1); }
+        
+        /* Comandos rápidos */
+        .quick-commands { display: flex; gap: 10px; padding: 10px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; overflow-x: auto; }
+        .command-chip { background: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; border: 1px solid #e2e8f0; white-space: nowrap; transition: all 0.2s; }
+        .command-chip:hover { background: #667eea; color: white; border-color: #667eea; }
+        
+        /* Stats personales */
+        .personal-stats { display: flex; justify-content: space-around; padding: 10px; background: white; border-top: 1px solid #e2e8f0; font-size: 0.9em; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Login Screen -->
+        <!-- Login -->
         <div id="loginScreen" class="login-screen">
-            <h1>🤖 @shopcmar_bot</h1>
-            <p>Inicia sesión con Telegram para usar el bot sincronizado</p>
+            <h1>💬 MI CHAT PERSONAL</h1>
+            <p>Inicia sesión para acceder a tu chat privado</p>
             
             <div class="telegram-login-widget">
                 <script async src="https://telegram.org/js/telegram-widget.js?22"
@@ -63,75 +67,69 @@
                         data-request-access="write">
                 </script>
             </div>
-            <div id="loginStatus" style="margin-top: 20px; padding: 10px; display: none;"></div>
+            
+            <div id="loginStatus" style="margin-top: 20px; padding: 10px; display: none; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                Conectando...
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.9;">
+                Cada usuario tiene su propio chat personal<br>
+                Nadie más puede ver tus mensajes
+            </p>
         </div>
 
-        <!-- Main Screen -->
-        <div id="mainScreen" class="main-screen">
+        <!-- Chat Personal -->
+        <div id="chatScreen" class="chat-screen">
             <div class="header">
-                <h1>🤖 @shopcmar_bot</h1>
                 <div class="user-info">
                     <div class="user-avatar" id="userAvatar">👤</div>
                     <div>
                         <div id="userName">Cargando...</div>
-                        <div style="font-size: 0.8em;" id="userId"></div>
+                        <div style="font-size: 0.8em; opacity: 0.9;" id="userId"></div>
                     </div>
                 </div>
                 <button class="btn-logout" onclick="logout()">Salir</button>
             </div>
-
-            <div class="main-content">
-                <!-- Comandos -->
-                <div class="commands-section">
-                    <h2>📋 Comandos</h2>
-                    <div class="command-item" onclick="enviarComando('/start')">/start - Iniciar bot</div>
-                    <div class="command-item" onclick="enviarComando('/ayuda')">/ayuda - Ver comandos</div>
-                    <div class="command-item" onclick="enviarComando('/info')">/info - Información</div>
-                    <div class="command-item" onclick="enviarComando('/hora')">/hora - Hora actual</div>
-                    <div class="command-item" onclick="enviarComando('/perfil')">/perfil - Tu perfil</div>
-                    <div class="command-item" onclick="enviarComando('/web')">/web - Abrir web</div>
-                </div>
-
-                <!-- Chat -->
-                <div class="chat-section">
-                    <div class="chat-messages" id="chatMessages"></div>
-                    <div class="chat-input">
-                        <input type="text" id="messageInput" placeholder="Escribe un mensaje o comando..." onkeypress="if(event.key==='Enter') enviarMensaje()">
-                        <button onclick="enviarMensaje()">➤</button>
-                    </div>
-                </div>
-
-                <!-- Stats -->
-                <div class="stats-section">
-                    <div><span class="stat-number" id="statMensajes">0</span><br>Mensajes</div>
-                    <div><span class="stat-number" id="statComandos">0</span><br>Comandos</div>
-                    <div><span class="stat-number" id="statUsuarios">0</span><br>Online</div>
-                </div>
+            
+            <div class="quick-commands">
+                <span class="command-chip" onclick="enviarComando('/start')">🏠 /start</span>
+                <span class="command-chip" onclick="enviarComando('/balance')">💰 /balance</span>
+                <span class="command-chip" onclick="enviarComando('/referidos')">👥 /referidos</span>
+                <span class="command-chip" onclick="enviarComando('/perfil')">👤 /perfil</span>
+                <span class="command-chip" onclick="enviarComando('/ayuda')">❓ /ayuda</span>
+            </div>
+            
+            <div class="messages-area" id="messagesArea">
+                <!-- Los mensajes personales se insertan aquí -->
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." onkeypress="if(event.key==='Enter') enviarMensaje()">
+                <button onclick="enviarMensaje()">➤</button>
+            </div>
+            
+            <div class="personal-stats" id="personalStats">
+                <span>💰 Cargando...</span>
+                <span>👥 Cargando...</span>
             </div>
         </div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURACIÓN CON TUS DATOS
-        // ============================================
-        const API_URL = "https://mibot-espejo.onrender.com";  // ← TU SERVIDOR EN RENDER
+        const API_URL = "https://mibot-espejo.onrender.com";
         
         let currentUser = null;
-        let sessionId = null;
-        let ultimoId = 0;
-        let mensajesCount = 0;
-        let comandosCount = 0;
+        let ultimoIdVisto = 0;
         let pollingInterval = null;
 
         window.onTelegramAuth = async function(user) {
-            document.getElementById("loginStatus").style.display = "block";
-            document.getElementById("loginStatus").textContent = "Verificando con el servidor...";
+            document.getElementById('loginStatus').style.display = 'block';
+            document.getElementById('loginStatus').textContent = 'Iniciando tu chat personal...';
             
             try {
                 const res = await fetch(`${API_URL}/auth/telegram`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(user)
                 });
                 
@@ -139,36 +137,31 @@
                 
                 if (data.success) {
                     currentUser = data.user;
-                    sessionId = data.session;
                     
-                    localStorage.setItem("user", JSON.stringify(currentUser));
-                    localStorage.setItem("session", sessionId);
+                    // Guardar en localStorage
+                    localStorage.setItem('telegram_user', JSON.stringify(currentUser));
                     
-                    document.getElementById("userName").textContent = 
-                        `${currentUser.first_name} ${currentUser.last_name || ""}`;
-                    document.getElementById("userId").textContent = `ID: ${currentUser.id}`;
+                    // Mostrar datos del usuario
+                    document.getElementById('userName').textContent = 
+                        `${currentUser.first_name} ${currentUser.last_name || ''}`;
+                    document.getElementById('userId').textContent = `ID: ${currentUser.id}`;
                     
                     if (currentUser.photo_url) {
-                        document.getElementById("userAvatar").innerHTML = 
-                            `<img src="${currentUser.photo_url}">`;
+                        document.getElementById('userAvatar').innerHTML = 
+                            `<img src="${currentUser.photo_url}" alt="Avatar">`;
                     }
                     
-                    document.getElementById("loginScreen").style.display = "none";
-                    document.getElementById("mainScreen").style.display = "block";
+                    // Cambiar a pantalla de chat
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('chatScreen').style.display = 'flex';
                     
-                    // Mensaje de bienvenida
-                    agregarMensaje({
-                        origen: "bot",
-                        texto: `¡Bienvenido ${currentUser.first_name}! 👋\n\nHas iniciado sesión con Telegram. Los mensajes que escribas aquí aparecerán en el bot y viceversa.`,
-                        fecha: Date.now() / 1000
-                    });
-                    
+                    // Iniciar polling para recibir mensajes
                     iniciarPolling();
-                } else {
-                    document.getElementById("loginStatus").textContent = "Error de autenticación";
+                    
+                    document.getElementById('loginStatus').textContent = '✅ Conectado a tu chat personal';
                 }
             } catch (e) {
-                document.getElementById("loginStatus").textContent = "Error de conexión con el servidor";
+                document.getElementById('loginStatus').textContent = '❌ Error de conexión';
                 console.error(e);
             }
         };
@@ -179,82 +172,126 @@
                 
                 try {
                     const res = await fetch(
-                        `${API_URL}/api/recibir/${currentUser.id}?session=${sessionId}&ultimo_id=${ultimoId}`
+                        `${API_URL}/api/chat/${currentUser.id}?user_id=${currentUser.id}&ultimo_id=${ultimoIdVisto}`
                     );
-                    const data = await res.json();
                     
-                    if (data.mensajes && data.mensajes.length) {
-                        data.mensajes.forEach(m => {
-                            agregarMensaje(m);
-                            if (m.origen !== "web") mensajesCount++;
-                        });
-                        document.getElementById("statMensajes").textContent = mensajesCount;
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        if (data.mensajes && data.mensajes.length > 0) {
+                            data.mensajes.forEach(m => agregarMensaje(m));
+                            ultimoIdVisto = data.ultimo_id;
+                        }
                     }
-                    
-                    if (data.ultimo_id > ultimoId) ultimoId = data.ultimo_id;
-                    if (data.conectados) document.getElementById("statUsuarios").textContent = data.conectados;
-                    
-                } catch (e) {}
-            }, 2000);
+                } catch (e) {
+                    console.error('Error en polling:', e);
+                }
+            }, 1000);
         }
 
         async function enviarMensaje() {
-            const input = document.getElementById("messageInput");
+            const input = document.getElementById('messageInput');
             const texto = input.value.trim();
+            
             if (!texto || !currentUser) return;
             
-            agregarMensaje({ origen: "web", texto, fecha: Date.now()/1000 });
-            
-            mensajesCount++;
-            if (texto.startsWith("/")) comandosCount++;
-            
-            document.getElementById("statMensajes").textContent = mensajesCount;
-            document.getElementById("statComandos").textContent = comandosCount;
-            
-            input.value = "";
-            
-            await fetch(`${API_URL}/api/enviar`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_id: currentUser.id,
-                    texto: texto,
-                    session: sessionId
-                })
+            // Mostrar mensaje inmediatamente
+            agregarMensaje({
+                origen: 'web',
+                texto: texto,
+                nombre: currentUser.first_name
             });
+            
+            input.value = '';
+            
+            // Enviar al servidor
+            try {
+                await fetch(`${API_URL}/api/enviar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        texto: texto
+                    })
+                });
+            } catch (e) {
+                console.error('Error enviando mensaje:', e);
+            }
         }
 
         function enviarComando(comando) {
-            document.getElementById("messageInput").value = comando;
+            document.getElementById('messageInput').value = comando;
             enviarMensaje();
         }
 
-        function agregarMensaje(m) {
-            const chat = document.getElementById("chatMessages");
-            const div = document.createElement("div");
-            div.className = `message ${m.origen === "web" ? "user" : "bot"}`;
+        function agregarMensaje(mensaje) {
+            const area = document.getElementById('messagesArea');
+            const div = document.createElement('div');
             
-            const hora = new Date(m.fecha * 1000).toLocaleTimeString();
-            div.innerHTML = `<div class="message-content">${m.texto}<br><small>${hora}</small></div>`;
+            // Determinar tipo de mensaje
+            if (mensaje.origen === 'web') {
+                div.className = 'message mio';
+            } else if (mensaje.origen === 'telegram') {
+                div.className = 'message suyo';
+            } else {
+                div.className = 'message bot';
+            }
             
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
+            const fecha = new Date().toLocaleTimeString();
+            let contenido = '';
+            
+            if (mensaje.origen === 'bot') {
+                contenido = `<div>🤖 ${mensaje.texto}</div>`;
+            } else {
+                contenido = `<div><strong>${mensaje.nombre || 'Usuario'}:</strong> ${mensaje.texto}</div>`;
+            }
+            
+            div.innerHTML = `
+                ${contenido}
+                <div class="message-info">
+                    <span>${mensaje.origen === 'web' ? '📱 Web' : mensaje.origen === 'telegram' ? '📱 Telegram' : '🤖 Bot'}</span>
+                    <span>${fecha}</span>
+                </div>
+            `;
+            
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
         }
 
         function logout() {
-            if (pollingInterval) clearInterval(pollingInterval);
-            localStorage.clear();
-            location.reload();
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            
+            currentUser = null;
+            ultimoIdVisto = 0;
+            localStorage.removeItem('telegram_user');
+            
+            document.getElementById('chatScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('messagesArea').innerHTML = '';
+            document.getElementById('loginStatus').style.display = 'none';
         }
 
+        // Verificar sesión guardada
         window.onload = function() {
-            const user = localStorage.getItem("user");
-            const session = localStorage.getItem("session");
-            if (user && session) {
-                currentUser = JSON.parse(user);
-                sessionId = session;
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("mainScreen").style.display = "block";
+            const savedUser = localStorage.getItem('telegram_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                
+                document.getElementById('userName').textContent = 
+                    `${currentUser.first_name} ${currentUser.last_name || ''}`;
+                document.getElementById('userId').textContent = `ID: ${currentUser.id}`;
+                
+                if (currentUser.photo_url) {
+                    document.getElementById('userAvatar').innerHTML = 
+                        `<img src="${currentUser.photo_url}" alt="Avatar">`;
+                }
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                
                 iniciarPolling();
             }
         };
