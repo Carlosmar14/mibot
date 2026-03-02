@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot de Inversión</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; padding: 40px; max-width: 800px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .telegram-login { text-align: center; margin: 30px 0; }
+        .chat-box { border: 1px solid #ddd; height: 300px; overflow-y: auto; padding: 10px; margin: 20px 0; border-radius: 10px; }
+        .message { margin: 5px 0; padding: 8px; border-radius: 5px; }
+        .user { background: #e3f2fd; text-align: right; }
+        .bot { background: #f5f5f5; text-align: left; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 20px 0; text-align: center; }
+        .stat-card { background: #f5f5f5; padding: 15px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Bot de Inversión</h1>
+        
+        <div id="loginScreen">
+            <div class="telegram-login">
+                <script async src="https://telegram.org/js/telegram-widget.js?22"
+                        data-telegram-login="shopcmar_bot"
+                        data-size="large"
+                        data-onauth="onTelegramAuth(user)">
+                </script>
+            </div>
+        </div>
+
+        <div id="mainScreen" style="display: none;">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Saldo</h3>
+                    <p id="saldo">$0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Invertido</h3>
+                    <p id="invertido">$0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Ganancias</h3>
+                    <p id="ganancias">$0</p>
+                </div>
+            </div>
+
+            <div class="chat-box" id="chatBox"></div>
+
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Escribe /balance, /depositar 100, etc...">
+                <button onclick="enviarMensaje()">Enviar</button>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="enviarComando('/start')">/start</button>
+                <button onclick="enviarComando('/balance')">/balance</button>
+                <button onclick="enviarComando('/depositar 100')">/depositar 100</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://mibot-espejo.onrender.com";
+        let currentUser = null;
+        let ultimoId = 0;
+
+        window.onTelegramAuth = function(user) {
+            console.log("Usuario:", user);
+            currentUser = user;
+            
+            fetch(`${API_URL}/auth/telegram`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(user)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainScreen').style.display = 'block';
+                actualizarDatos();
+                iniciarPolling();
+            });
+        };
+
+        function iniciarPolling() {
+            setInterval(() => {
+                if (!currentUser) return;
+                
+                fetch(`${API_URL}/api/chat/${currentUser.id}?ultimo_id=${ultimoId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.mensajes && data.mensajes.length) {
+                        data.mensajes.forEach(m => agregarMensaje(m));
+                        ultimoId = data.ultimo_id;
+                    }
+                });
+            }, 2000);
+        }
+
+        function enviarMensaje() {
+            const input = document.getElementById('messageInput');
+            const texto = input.value;
+            
+            if (!texto || !currentUser) return;
+            
+            fetch(`${API_URL}/api/enviar`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user_id: currentUser.id,
+                    texto: texto
+                })
+            });
+            
+            input.value = '';
+            
+            if (texto.includes('/depositar')) {
+                setTimeout(actualizarDatos, 2000);
+            }
+        }
+
+        function enviarComando(comando) {
+            document.getElementById('messageInput').value = comando;
+            enviarMensaje();
+        }
+
+        function agregarMensaje(m) {
+            const chat = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = `message ${m.origen === 'web' ? 'user' : 'bot'}`;
+            div.textContent = m.texto;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function actualizarDatos() {
+            if (!currentUser) return;
+            
+            fetch(`${API_URL}/api/usuario/${currentUser.id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) {
+                    document.getElementById('saldo').textContent = `$${data.user.saldo || 0}`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
